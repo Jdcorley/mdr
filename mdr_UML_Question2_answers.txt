@@ -1,0 +1,35 @@
+QUESTION 2
+
+What classes/entities do we need to model?
+	-Students
+
+	-Received Grades
+
+	-Classes Taken
+
+What fields/attributes will each entity have?
+	-Students- student_id, first_name, last_name
+
+  -Received Grades- grade_id, class_id, student_id, grade_recieved, credits_recieved
+
+  -Classes Taken- class_id, class_name, credits
+
+What data types do we need to use?
+	-Students- student_id(INT), first_name(VARCHAR(16)), last_name(VARCHAR(16))
+
+  -Received Grades- grade_id(INT), class_id(INT), student_id(INT), grade_recieved(ENUM(‘A’,’B’,’C’,’D’,’F’)), credits_recieved(ENUM(0,1,2,3,4))
+
+  -Classes Taken- class_id(INT), class_name(VARCHAR(20)), credits(ENUM(1,2,3,4))
+
+What relationships exist b/t entities?
+	-Students 1..* classes
+	-Students 1..* grades
+
+	-Grades 1..1 classes 
+	-Grades 1..1 students
+  
+	-Classes 1..1 Grades
+	-Classes 1..* students
+
+How should the relationships be represented b/t tables?
+	Students-student_id-----student_id-Grades-grade_id-----class_id-Classes
