@@ -1,0 +1,101 @@
+1. In your own words, explain the benefits of normilization. Include a real-world scenario where normilization is necessary.
+
+  A: Data normilization is a way of structuring data to reduce duplication and improve the integrity of the data making it easier to update any errors or inconsistencies within the data. In relational
+  databases this would be done by organizing the data into seperate tables with columns representing attributes of the entity represented by the table and then establishing relevent relationships between
+  the tables. Each table would only have attributes relevent to the entity represented by the table and no tables should have the same information that another table contains. Data normilization is good for  optimizing write speed because every piece of data has its designated location it has to be seeded into. 
+  
+    For example lets say a physical therapist practice owner has an excessive amount of patient files (the physical version of files that is) that have not been referenced in years but they have to be 
+    kept on file possibly for legal reasons or maybe if they return as a patient someday. In order to save filing cabinet space as well as reduce the risk of losing old files due to any building damage 
+    (a fire for perhaps) then they might want to create a backup relational database for their old patient files. Since they most likly won't be referencing the files too much they would much rather have
+    it be easy to write to their old patients database then to read because of this they design the database with data normilization in mind at the cost of slower reading speeds and clunkier queries. 
+
+2. List and explain the different normal forms and how they relate to one another, with regard to your real-world scenario in the first question. 
+
+  A:
+    
+    Normal Form 1 (1NF) - In order to meet this normilization form you cannot have multiple values within the columns of any tables. For example if you had a table representing the patient and the table had    a column (an attribute field) that represented birth year it would not meet (1NF) if some birth years were enter as the last two digits of the year while some were entered as four digits. This would 
+    violate the multiple values within a column requirement in order to meet (1NF).
+
+    Normal Form 2 (2NF) - In order to meet (2NF) the requirments of (1NF) must also be meant and in addition to that any attributes that are not a key cannot be dependent on a sub-set of the primary key of     that table. For example You wouldn't have a patient table with names as thier primary key and an attribute column of last_visit that depended on the appointment tables's primary key. You would instead 
+    put that last_visit attribute directly in the appointments table along with the primary key it depends on and keep the patient table as strictly information pertaining to that patient aside from their
+    appointments, unless it made sense to otherwise but for the sake of this example lets say the physical therapist wanted it that way (seperate patient profile and appointment tables).
+
+    Normal Form 3 (3NF) - In order to meet (3NF) you must also meet the requirements of (2NF) which also must transitivly meet the requirements of (1NF). In addition to those requirements you must also NOT
+    have transitive functional depencies of non-prime attributes. For example in the patients table you wouldn't have a patient_name that is dependent on the primary_key patient_id and then a patient age 
+    and gender that is dependent on the patient_name. You would instead have the primary key patient_id that all the other attributes of that table would be dependent on or you would break your attributes
+    up into different tables but all while keeping any transitive funcational dependencies out of picture. 
+
+    Boyce Codd Normal Form (BCNF) or 3.5NF ("It's Normal, Formal manners to eat corn on the Codd in Boyce Idaho") - In order to meet the requirements of (BCNF) all requirments of (3NF) must be met and in 
+    addition to those requirements there must be a super key for each table which is a key set of attributes in a table whose values uniquely identify with all the other attributes within that table. For 
+    example if you had a patients table and a patient_id for that id to be the super key you would need each patient_id to be the super key that references the other attributes for each instance of patient
+    within that table. This would also have to be the case for all other tables in the relational database. 
+
+  3. Convert the given table from (1NF) to (3NF)
+      
+CREATE TABLE professor_records (
+  "professor_id"   INTEGER,
+  "professor_name" VARCHAR(9),
+  "subject"        VARCHAR(11)
+);
+
+CREATE TABLE student_records (
+  "student_id"     INTEGER,
+  "student_email"  VARCHAR(24),
+  "student_name"   VARCHAR(9),
+  "professor_id"   INTEGER
+);
+
+
+CREATE TABLE grade_records (
+     "subject"        VARCHAR(11),
+  	 "grade"          VARCHAR(1)
+);
+
+
+INSERT INTO professor_records
+    ("professor_id", "professor_name", "subject")
+VALUES
+    (2,  'William C',      'Philosophy'),
+    (2, 'William C',      'Philosophy'),
+    (1, 'Natalie M',      'Economics'),
+    (3, 'Mark W',         'Mathematics'),
+    (1, 'Natalie M',      'Economics');
+
+INSERT INTO student_records
+    ("student_id", "student_email","student_name", "professor_id")
+VALUES
+    ( 1,           'john.b20@hogwarts.edu',    'John B', 2),
+    ( 2,           'sarah.s20@hogwarts.edu',   'Sarah S', 2),
+    ( 3,           'martha.l20@hogwarts.edu',  'Martha L', 1),
+    ( 4,           'james.g20@hogwarts.edu',   'James G', 3),
+    ( 5,           'stanley.p20@hogwarts.edu', 'Stanley P', 1);
+
+INSERT INTO grade_records
+    ("subject", "grade")
+VALUES
+    ('Philosophy',  'A'),
+    ('Philosophy',  'C'),
+    ('Economics',   'A'),
+    ('Mathematics', 'B'),
+    ('Economics',   'B');
+
+
+
+  4. Explain the trade-offs of normalizing the data from the given table in the previous example.
+    
+    A: One disadvantage of normalizing the data is that now you have to use joins in your queries to access and organize the data into the previous form that was provided. Also if the database were to 
+    increase in size the speed for reading data is naturally going to slowdown as you scale the database because you have to search through more tables to retrieve your required data that you need to 
+    access.
+
+  5. If you had to denormalize the data from its normalized form how would you go about doing so?
+
+    A: If I had to denormalize the data in the given table to speed up reporting I would specifically figure out the requirements for what needs to be reported and then I would make the table layout very
+    close to what would need to be accessed the most that way when you go to run a query you could just pull the exact information you need from one table rather then having to write a bunch of joins
+    and sift through various tables.
+
+  6. Discuss the trade-offs b/t data normalization and data de-normalization. 
+
+    A: With data normalization the write speeds are going to be much quicker because the data has been organized into specfic tables with very little dependencies and hopefully no partial or primary dependecies. On the downside as the database scales and grows in size it is going to have much slower reading times then if you had a database setup with de-normilization as the focus so you could query data 
+quickly when you need to. Because there are so many different tables with data normilization it makes it harder to design normilized databases because of the planning that has to go into it. If mistakes 
+are made it would also be much harder to fix. Data de-normalization is going to be much easier to maintain and troubleshoot as well as pull queries from because you can organize your tables in a fashion
+that would allow you to pull the data as you see fit. 
