@@ -1,0 +1,176 @@
+1. Explain a subquery in your own words. 
+
+A: A subquery is when you call a query on another query in parenthesis which could stand as its on 
+query by itself. You are nesting a query within another query.
+
+2.  Where can you use a subquery within a SELECT statement?
+
+A: You can subquery within the where clause and also in the from and select clauses.
+
+
+3. When would you employ a subquery?
+
+
+A: You would employ a subquery when you want to query some information but need to access multiple
+tables to possibly do an aggregate but do then want to add another aggregate or another conditional or filter ontop of that first query. 
+
+
+4. Explain a row constructor in your own words.
+
+
+A: A row constructor within the context of a query is where you would pick specific columns or attributes values you would like to match in order for the row constructor to return as true. You can pick a specific combination of attributes it doesn't not have to contain every attribute withina  table.
+
+
+5. What happens if a row in the subquery result provides a NULL value to the comparison?
+
+
+
+A: The result would return as NULL.
+
+
+
+6. What are the ways to use a subquery within a WHERE clause? 
+
+
+
+A: Within the WHERE clause you have various options including IN, NOT IN, ANY, SOME and ALL.
+
+
+
+7.
+
+
+A:
+  1.   
+  
+  SELECT first_name as volunteer_first_name, last_name as volunteer_last_name, name as dog_name
+  FROM (SELECT *
+  FROM volunteers
+  LEFT OUTER JOIN dogs
+  ON  dogs.id =  volunteers.foster_dog_id) as volunteer_foster;
+
+  2. 
+
+SELECT name as cat_name, first_name as adopters_first_name, last_name as adopters_last_name, date as cat_adoption_date
+FROM (SELECT cats.name, adopters.first_name, adopters.last_name, cat_adoptions.date 
+FROM cat_adoptions
+JOIN cats 
+ON cats.id = cat_adoptions.cat_id
+JOIN adopters
+ON adopters.id = cat_adoptions.adopter_id
+WHERE date > now() - interval '1 month') cats_adopted;
+
+  3. 
+
+SELECT id as dog_id, first_name as possible_adopter_first_name, last_name as possible_adopter_last_name, phone_number as possible_adopter_phone_number
+FROM(SELECT adopters.*
+FROM adopters
+CROSS JOIN dogs
+WHERE dogs.id != (SELECT dog_id
+                  FROM dog_adoptions)
+AND adopters.id != (SELECT adopter_id
+                    FROM dog_adoptions)) as dog_adoption_options;
+
+  4.
+
+
+SELECT ct.name as unadopted_cat_name, dg.name as unadopted_dog_name
+FROM (SELECT *
+FROM cats c
+LEFT JOIN cat_adoptions AS ca ON ca.cat_id = c.id) ct
+FULL JOIN(SELECT *
+FROM dogs d
+LEFT JOIN dog_adoptions AS da ON da.dog_id = d.id) AS dg ON ct.adopter_id = dg.adopter_id
+WHERE dg.adopter_id IS null AND ct.adopter_id IS null;
+
+
+  5.
+
+SELECT a.first_name as roscos_owner_first_name, a.last_name as roscos_owner_last_name
+FROM adopters a
+JOIN (SELECT *
+FROM dogs d
+LEFT JOIN dog_adoptions AS da ON da.dog_id = d.id
+WHERE d.name LIKE 'Rosco') AS dg ON dg.adopter_id = a.id;
+
+
+
+
+8. 
+
+  A:
+
+  1.
+
+SELECT name as patron_waiting_for_APM, rank as position_in_line
+FROM (SELECT patrons.name, holds.rank
+FROM patrons
+FULL OUTER JOIN holds
+ON holds.patron_id = patrons.id
+JOIN books
+ON holds.isbn = books.isbn
+WHERE books.title LIKE 'Advanced Potion-Making'
+ORDER BY holds.rank) as waiting_list_check;
+
+  2.
+
+SELECT title as book_title, checked_in_date as date_last_checked_in
+FROM (SELECT books.title, transactions.checked_in_date
+FROM books NATURAL JOIN transactions) check_books_checked_in;
+
+  3.
+
+SELECT title as book_title, avg as average_days_checked_out
+FROM (SELECT AVG(DATE_PART('day', transactions.checked_in_date::timestamp -transactions.checked_out_date::timestamp)), books.title
+FROM transactions NATURAL JOIN books
+GROUP BY books.title) average_check_out;
+
+  4.
+
+SELECT DISTINCT title as books_to_retire
+FROM(SELECT books.title, checked_out_date 
+FROM transactions NATURAL JOIN books
+WHERE checked_out_date > now() - interval '5 years') as books_for_trash;
+
+  5.
+
+SELECT name as patron_name, title as book_out
+FROM patrons p
+FULL OUTER JOIN (SELECT *
+FROM books 
+JOIN transactions ON transactions.isbn = books.isbn
+WHERE checked_in_date IS null) as bs ON bs.patron_id = p.id;
+
+9.
+
+  A:
+
+  1.
+
+ SELECT DISTINCT airplane_model as models_with_over_250_customers_past_month
+ FROM (SELECT *
+ FROM transactions 
+ NATURAL JOIN flights 
+ NATURAL JOIN airplanes
+ WHERE date > CURRENT_DATE - INTERVAL '31 DAYS' AND seats_sold > 250) past_months_customers_over_250;
+
+  2.
+SELECT DISTINCT *
+FROM(SELECT destination, origin
+FROM flights
+NATURAL JOIN transactions
+NATURAL JOIN airplanes
+WHERE seats_sold/seat_capacity > .90) as ninety_percent_sold;
+
+  3.
+
+SELECT total_revenue as revenue_from_SIN_flights
+FROM (SELECT *
+FROM transactions
+NATURAL JOIN flights
+WHERE origin LIKE '%SIN%' OR destination LIKE '%SIN%') asia_flights;
+
+10. Compare the subqueries you've written above. Compare them to the joins you wrote in Checkpoint 6. Which ones are more readable? Which were more logical to write?
+
+  A: I think that the subqueries were not only easier to write but easier to organize and understand
+  after I had written them. What is nice is you can select and connect a bunch of tables with natural joins then make that a subquery and filter out what you really want. This provide an easy way to remove the final query and see all the attributes in one connected table to see whats going on then you can have a better overview of what that query did by breaking it up into the subqueries which in themselves are functional. 
